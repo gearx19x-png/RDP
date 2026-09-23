@@ -16,11 +16,11 @@ jobs:
     - run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "@cyb3rking" -Force)
     - name: Start Tunnel and Display URL
       run: |
-        Start-Process ssh -ArgumentList "-R 3389:localhost:3389 plan@localhost.run -o StrictHostKeyChecking=no" -RedirectStandardOutput "tunnel.log"
-        Start-Sleep -Seconds 10
+        Start-Process ssh -ArgumentList "-R 80:localhost:3389 plan@localhost.run -o StrictHostKeyChecking=no" -RedirectStandardOutput "tunnel.log"
+        Start-Sleep -Seconds 20
         Write-Output "=========================================="
-        Write-Output "YOUR PUBLIC RDP ADDRESS:"
-        Get-Content tunnel.log | Select-String "tunneled via"
+        Write-Output "FULL LOG DETAILS:"
+        Get-Content tunnel.log
         Write-Output "=========================================="
     - name: Keep Alive
       run: |
