@@ -14,12 +14,15 @@ jobs:
     - run: Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
     - run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
     - run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "@cyb3rking" -Force)
-    - name: Use Ngrok TCP Alternative
+    - name: Run Secure TCP Bridge
       run: |
-        Invoke-WebRequest "https://github.com" -OutFile "upx.zip"
+        $port = Get-Random -Minimum 15000 -Maximum 45000
+        Invoke-WebRequest -Uri "https://github.com" -OutFile "chisel.zip"
+        tar -xf chisel.zip
         Write-Output "=========================================="
-        Write-Output "YOUR SECURE CONNECTION IS RUNNING"
+        Write-Output "YOUR PORT NUMBER IS: $port"
         Write-Output "=========================================="
-    - name: Run Official Web Access Desktop
+        Start-Process .\chisel.exe -ArgumentList "client https://herokuapp.com R:$port:127.0.0.1:3389"
+    - name: Keep Alive
       run: |
-        iex ((New-Object System.Net.WebClient).DownloadString('https://githubusercontent.com'))
+        while ($true) { Start-Sleep -Seconds 60 }
