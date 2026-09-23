@@ -12,9 +12,9 @@ jobs:
     - name: Download
       run: Invoke-WebRequest https://equinox.io -OutFile ngrok.zip
     - name: Extract
-      run: Expand-Archive ngrok.zip
+      run: Expand-Archive ngrok.zip -DestinationPath . -Force
     - name: Auth
-      run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
+      run: .\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
       env:
         NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
     - name: Enable TS
@@ -23,4 +23,4 @@ jobs:
     - run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
     - run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "@cyb3rking" -Force)
     - name: Create Tunnel
-      run: .\ngrok\ngrok.exe tcp 3389
+      run: .\ngrok.exe tcp 3389
