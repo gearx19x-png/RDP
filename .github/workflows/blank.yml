@@ -9,21 +9,20 @@ jobs:
     timeout-minutes: 9999
 
     steps:
-    - name: Enable TS
-      run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
-    - run: Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-    - run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
-    - run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "@cyb3rking" -Force)
-    - name: Run Web Desktop Terminal
+    - name: Enable SSH Server
       run: |
-        choco install gotty -y
-        Start-Process gotty -ArgumentList "-w powershell"
-        Start-Sleep -Seconds 10
-    - name: Create Web Tunnel Link
+        Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+        Start-Service sshd
+        Set-Service -Name sshd -StartupType 'Automatic'
+    - name: Set Password and Firewall
+      run: |
+        Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "@cyb3rking" -Force)
+        Enable-NetFirewallRule -DisplayGroup "OpenSSH Server"
+    - name: Initialize Ngrok Tunnel
       run: |
         choco install ngrok -y
         ngrok config add-authtoken $Env:NGROK_AUTH_TOKEN
-        Start-Process ngrok -ArgumentList "http 8080 --log=stdout" -RedirectStandardOutput "ngrok.log"
+        Start-Process ngrok -ArgumentList "http 22 --log=stdout" -RedirectStandardOutput "ngrok.log"
         Start-Sleep -Seconds 15
         Write-Output "=========================================="
         Write-Output "YOUR WEBBROWSER CONNECTION LINK:"
