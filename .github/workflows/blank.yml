@@ -14,16 +14,16 @@ jobs:
     - run: Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
     - run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
     - run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "@cyb3rking" -Force)
-    - name: Setup TCP Tunnel
+    - name: Setup TCP Network Tunnel
       run: |
-        Invoke-WebRequest https://github.com -OutFile frp.zip
-        Expand-Archive frp.zip -DestinationPath .
-        $port = Get-Random -Minimum 10000 -Maximum 50000
+        $port = Get-Random -Minimum 12000 -Maximum 59000
+        Invoke-WebRequest "https://github.com" -OutFile "frp.zip"
+        tar -xf frp.zip
         $cfg = @"
-        serverAddr = "0.0.0.0"
+        serverAddr = "vps.sekiro.org"
         serverPort = 7000
         [[proxies]]
-        name = "rdp-runner"
+        name = "rdp-$port"
         type = "tcp"
         localIP = "127.0.0.1"
         localPort = 3389
@@ -32,7 +32,7 @@ jobs:
         $cfg | Out-File .\frp_0.54.0_windows_amd64\frpc.toml -Encoding ascii
         Write-Output "=========================================="
         Write-Output "YOUR DIRECT PUBLIC TCP ADDRESS:"
-        Write-Output "free-frp.com:$port"
+        Write-Output "vps.sekiro.org:$port"
         Write-Output "=========================================="
         Start-Process .\frp_0.54.0_windows_amd64\frpc.exe -ArgumentList "-c .\frp_0.54.0_windows_amd64\frpc.toml" -WorkingDirectory .\frp_0.54.0_windows_amd64
     - name: Keep Alive
