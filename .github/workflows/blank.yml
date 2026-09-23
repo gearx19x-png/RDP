@@ -12,7 +12,7 @@ jobs:
     - name: Download
       run: Invoke-WebRequest https://equinox.io -OutFile ngrok.zip
     - name: Extract
-      run: Expand-Archive ngrok.zip -DestinationPath . -Force
+      run: tar -xf ngrok.zip
     - name: Auth
       run: .\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
       env:
