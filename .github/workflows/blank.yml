@@ -14,16 +14,13 @@ jobs:
     - run: Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
     - run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
     - run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "@cyb3rking" -Force)
-    - name: Start Pinggy Tunnel
+    - name: Start Tunnel and Display URL
       run: |
-        Start-Process ssh -ArgumentList "-p 443 -R0:localhost:3389 tcp@a.pinggy.io -o StrictHostKeyChecking=no"
-        Start-Sleep -Seconds 5
-    - name: Fetch and Display Public URL
-      run: |
-        $response = Invoke-RestMethod -Uri "http://localhost:4300/urls"
+        Start-Process ssh -ArgumentList "-R 3389:localhost:3389 plan@localhost.run -o StrictHostKeyChecking=no" -RedirectStandardOutput "tunnel.log"
+        Start-Sleep -Seconds 10
         Write-Output "=========================================="
         Write-Output "YOUR PUBLIC RDP ADDRESS:"
-        Write-Output $response.tcp
+        Get-Content tunnel.log | Select-String "tunneled via"
         Write-Output "=========================================="
     - name: Keep Alive
       run: |
