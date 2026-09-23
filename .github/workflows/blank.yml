@@ -14,15 +14,23 @@ jobs:
     - run: Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
     - run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
     - run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "@cyb3rking" -Force)
-    - name: Run Secure TCP Bridge
+    - name: Run Web Desktop Terminal
       run: |
-        $port = Get-Random -Minimum 15000 -Maximum 45000
-        Invoke-WebRequest -Uri "https://github.com" -OutFile "chisel.zip"
-        tar -xf chisel.zip
+        choco install gotty -y
+        Start-Process gotty -ArgumentList "-w powershell"
+        Start-Sleep -Seconds 10
+    - name: Create Web Tunnel Link
+      run: |
+        choco install ngrok -y
+        ngrok config add-authtoken $Env:NGROK_AUTH_TOKEN
+        Start-Process ngrok -ArgumentList "http 8080 --log=stdout" -RedirectStandardOutput "ngrok.log"
+        Start-Sleep -Seconds 15
         Write-Output "=========================================="
-        Write-Output "YOUR PORT NUMBER IS: $port"
+        Write-Output "YOUR WEBBROWSER CONNECTION LINK:"
+        Get-Content ngrok.log | Select-String "url="
         Write-Output "=========================================="
-        Start-Process .\chisel.exe -ArgumentList "client https://herokuapp.com R:$port:127.0.0.1:3389"
+      env:
+        NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
     - name: Keep Alive
       run: |
         while ($true) { Start-Sleep -Seconds 60 }
